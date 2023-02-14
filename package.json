@@ -30,6 +30,7 @@
     "material-design-icons-iconfont": "^6.1.0",
     "serverless": "^2.35.0",
     "serverless-finch": "^2.6.0",
+    "serverless-single-page-app-plugin": "file:./serverless-single-page-app-plugin",
     "vue": "^2.6.11",
     "vue-i18n": "^8.24.2",
     "vue-router": "^3.2.0",
@@ -58,8 +59,9 @@
     "eslint-plugin-prettier": "^3.3.1",
     "eslint-plugin-vue": "^6.2.2",
     "prettier": "^2.2.1",
-    "sass": "^1.26.5",
+    "sass": "^1.32.8",
     "sass-loader": "^8.0.2",
+    "serverless-single-page-app-plugin": "^1.0.4",
     "typescript": "~4.1.5",
     "vue-template-compiler": "^2.6.11",
     "vuetify-loader": "^1.7.2"
