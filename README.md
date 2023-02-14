@@ -34,3 +34,6 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+- CloudFront: https://d2hfhfxmu8tvco.cloudfront.net/
+- S3-website: https://shop-vue-cloudfront-app.s3.amazonaws.com/
