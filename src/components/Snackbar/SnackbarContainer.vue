@@ -1,6 +1,9 @@
 <template>
 	<div v-show="isErrorSnackbar">
-		<v-error-snackbar v-model="snackbar.visible" :message="snackbar.message" />
+		<v-error-snackbar
+			:is-visible="snackbarData.visible"
+			:message="snackbarData.message"
+		/>
 	</div>
 </template>
 
@@ -15,13 +18,12 @@ import VErrorSnackbar from './ui/ErrorSnackbar.vue';
 export default Vue.extend({
 	components: { VErrorSnackbar },
 	computed: {
-		snackbar() {
+		snackbarData(): SnackbarState {
 			return this.$store.state.snackbar;
 		},
 		isErrorSnackbar() {
-			const snackbar: SnackbarState = this.snackbar;
-
-			return snackbar.type === SnackbarType.Error;
+			const snackbarData: SnackbarState = this.snackbarData;
+			return snackbarData.type === SnackbarType.Error;
 		},
 	},
 });

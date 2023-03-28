@@ -28,7 +28,7 @@
 			</div>
 		</v-form>
 
-		<v-snackbar v-model="errorSnackbar" timeout="7000">
+		<!-- <v-snackbar v-model="errorSnackbar" timeout="7000">
 			<p class="my-0 font-weight-medium" v-html="snackbarMessage"></p>
 
 			<p class="my-0 text-caption font-weight-light">
@@ -40,46 +40,21 @@
 					{{ $t('common.close') }}
 				</v-btn>
 			</template>
-		</v-snackbar>
+		</v-snackbar> -->
 	</div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue';
 
-import axios from 'axios';
-
-const fetchPresignedS3Url = (url: string, fileName: string) => {
-	return axios({
-		method: 'GET',
-		url,
-		params: {
-			name: encodeURIComponent(fileName),
-		},
-	});
-};
-
-const uploadFileBy = async (url: string, file: File) => {
-	const destUrl = await fetchPresignedS3Url(url, file.name);
-
-	console.info('Uploading to: ', destUrl.data.url);
-
-	// save
-	const result = await fetch(destUrl.data.url, {
-		method: 'PUT',
-		body: file,
-	});
-
-	console.info('Result: ', result);
-
-	return result;
-};
+import axios, { AxiosRequestConfig } from 'axios';
 
 type Data = {
 	file: File | null;
 	isUploading: boolean;
 	errorSnackbar: boolean;
 	snackbarMessage: string;
+	authorizationToken: string | null;
 };
 
 export default Vue.extend({
@@ -91,36 +66,78 @@ export default Vue.extend({
 		return {
 			file: null,
 			isUploading: false,
-			//
 			errorSnackbar: false,
 			snackbarMessage: '',
+			authorizationToken: localStorage.getItem('authorization_token'),
 		};
 	},
 	methods: {
+		async fetchPresignedS3Url(url: string, fileName: string) {
+			console.log(
+				'[fetchPresignedS3Url] authorizationToken: ',
+				this.authorizationToken
+			);
+
+			try {
+				const requestConfig: AxiosRequestConfig = {
+					method: 'GET',
+					url,
+					params: {
+						name: encodeURIComponent(fileName),
+					},
+				};
+				if (this.authorizationToken) {
+					requestConfig.headers = {
+						Authorization: `Basic ${this.authorizationToken}`,
+					};
+				}
+				const result = await axios(requestConfig);
+
+				const data = result.data;
+				return data;
+			} catch (error) {
+				console.log('[fetchPresignedS3Url] error:', error.response); // this is the main part. Use the response property from the error object
+				this.showErrorSnackbar(error.response.data.message);
+				return null;
+			}
+		},
+		async uploadFileBy(url: string, file: File) {
+			const destUrl = await this.fetchPresignedS3Url(url, file.name);
+			console.log('[uploadFileBy] destUrl: ', destUrl);
+
+			if (destUrl) {
+				console.info('[uploadFileBy] Uploading to: ', destUrl?.url);
+
+				// save
+				const result = await fetch(destUrl?.url, {
+					method: 'PUT',
+					body: file,
+				});
+
+				console.info('[uploadFileBy] Result: ', result);
+
+				return result;
+			}
+		},
 		showUploadingStatus() {
 			this.isUploading = true;
 		},
 		hideUploadingStatus() {
 			this.isUploading = false;
 		},
-		toggleSnackbarMessage({ show, msg }: { show: boolean; msg: string }) {
-			this.errorSnackbar = show;
-			this.snackbarMessage = msg;
-		},
-		showSnackbarMessage(msg: string) {
-			this.toggleSnackbarMessage({ show: true, msg });
+		showErrorSnackbar(msg: string, reason = 'error') {
+			const message = this.$t(msg, {
+				reason,
+			});
+			this.$store.dispatch('snackbar/showErrorSnackbar', { message });
 		},
 		async uploadFile() {
 			this.showUploadingStatus();
 
 			try {
-				await uploadFileBy(this.url, this.file as File);
+				await this.uploadFileBy(this.url, this.file as File);
 			} catch (e) {
-				const msg = this.$t('errorMessage.cantUploadFile', {
-					reason: e.message,
-				});
-
-				this.showSnackbarMessage(msg.toString());
+				this.showErrorSnackbar(e.message);
 			} finally {
 				this.resetFile();
 				this.hideUploadingStatus();

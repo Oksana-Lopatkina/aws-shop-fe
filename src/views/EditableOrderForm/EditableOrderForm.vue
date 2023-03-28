@@ -121,7 +121,7 @@ export default Vue.extend({
 				reason: reason,
 			});
 
-			this.$store.dispatch('snackbar/showErrorSnackber', { message });
+			this.$store.dispatch('snackbar/showErrorSnackbar', { message });
 		},
 		submitStatusDetails(v: { status: ORDER_STATUS; comment: string }) {
 			const orderId = this.order.id as string;

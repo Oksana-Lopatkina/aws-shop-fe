@@ -23,7 +23,7 @@ export default Vue.extend({
 	watch: {
 		cartErrorMessage(message: string) {
 			if (message) {
-				this.$store.dispatch('snackbar/showErrorSnackber', { message });
+				this.$store.dispatch('snackbar/showErrorSnackbar', { message });
 			}
 		},
 	},
